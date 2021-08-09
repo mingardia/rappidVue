@@ -18,8 +18,13 @@ export default class App extends Vue {
 private graph!: dia.Graph;
 private paper!: dia.Paper;
 private scroller!: ui.PaperScroller;
+
+
 public created() : void {
-const graph = this.graph = new dia.Graph({}, { cellNamespace: shapes });
+  console.log("Hello");
+var graph = new dia.Graph({}, { cellNamespace: shapes });
+
+
 
 const paper = this.paper = new dia.Paper({
     model: graph,
@@ -31,15 +36,16 @@ const paper = this.paper = new dia.Paper({
     cellViewNamespace: shapes
 });
 
+
 const scroller = this.scroller = new ui.PaperScroller({
     paper,
-    autoResizePaper: true,
+    autoResizePaper: false,
     cursor: 'grab'
 });
 
 scroller.render();
 
-const rect = new shapes.standard.Rectangle({
+const rect1 = new shapes.standard.Rectangle({
     position: { x: 100, y: 100 },
     size: { width: 100, height: 50 },
     attrs: {
@@ -49,7 +55,24 @@ const rect = new shapes.standard.Rectangle({
  }
 });
 
-this.graph.addCell(rect);
+const rect2 = new shapes.standard.Rectangle({
+    position: { x: 300, y: 100 },
+    size: { width: 100, height: 50 },
+    attrs: {
+        label: {
+            text: 'Hello World2'
+    }
+ }
+});
+
+graph.addCell(rect1);
+graph.addCell(rect2);
+
+var link = new shapes.standard.Link();
+link.source(rect1);
+link.target(rect2);
+link.addTo(graph);
+
 }
 
 public mounted(): void {
