@@ -93,68 +93,6 @@ export default class App extends Vue {
         size: { height: 100 },
         itemOverflow: true,
         attrs: {
-          root: {
-            magnet: false,
-          },
-          header: {
-            fill: "#31d0c6",
-          },
-          footer: {
-            height: 10,
-            x: 0,
-            refDy: -10,
-            refWidth: "100%",
-            fill: "#31d0c6",
-            stroke: "black",
-          },
-          headerLabel: {
-            fontFamily: "Sans-serif",
-            fontWeight: "bold",
-            textWrap: {
-              ellipsis: true,
-              height: 30,
-            },
-          },
-          group_0: {
-            scrollTop: 0,
-          },
-          buttonsGroups: {
-            stroke: "black",
-          },
-          forksGroups: {
-            stroke: "lightgray",
-          },
-          itemBodies: {
-            itemHighlight: {
-              stroke: "#000000",
-            },
-          },
-          itemLabels: {
-            magnet: "true",
-            cursor: "pointer",
-            fontSize: 12,
-            fontFamily: "Sans-serif",
-            itemHighlight: {
-              fill: "#fe854f",
-            },
-          },
-          itemLabels_disabled: {
-            magnet: null,
-            fill: "#aaaaaa",
-            cursor: "not-allowed",
-          },
-        },
-      }
-    );
-
-    var order = new MappingRecord({
-      itemHeight: 20,
-      itemOffset: 15,
-      itemMinLabelWidth: 70,
-      padding: { top: 35, left: 10, right: 10, bottom: 10 },
-      size: { height: 100, width: 50 },
-      itemOverflow: true,
-      attrs: {
         root: {
           magnet: false,
         },
@@ -205,8 +143,70 @@ export default class App extends Vue {
           fill: "#aaaaaa",
           cursor: "not-allowed",
         },
+      }
       },
-      items: [
+      {
+         setName: function(name :string, opt :any) {
+            this.attr(['headerLabel', 'textWrap', 'text'], name, opt);
+        },
+        markup: [{
+            tagName: 'rect',
+            selector: 'body'
+        }, {
+            tagName: 'rect',
+            selector: 'header'
+        }, {
+            tagName: 'text',
+            selector: 'headerLabel'
+        }, {
+            tagName: 'rect',
+            selector: 'footer'
+        }] 
+      },
+      {
+           attributes: {
+            //@ts-ignore   
+            ...shapes.standard.Record.attributes
+           }
+      }
+    );
+
+    Object.assign(shapes, {
+    mapping : {
+        MappingRecord
+    }
+});
+
+//@ts-ignore
+  shapes.mapping.RecordView = shapes.standard.RecordView.extend({
+
+        presentationAttributes: shapes.standard.RecordView.addPresentationAttributes({
+            attrs: ['TOOLS']
+        }),
+
+        getMagnetFromLinkEnd: function(end :any) {
+            var itemId = end.port;
+            var model = this.model;
+
+            while (itemId && !model.isItemVisible(itemId)) itemId = model.getItemParentId(itemId);
+            if (!itemId) {
+                // The connected magnet is not an item (it's a port or arbitrary sub-node)
+                //@ts-ignore
+                return dia.ElementViewPrototype.getMagnetFromLinkEnd.apply(this, arguments);
+            }
+
+            const sign = model.getItemOutsideViewSign(itemId);
+            if (sign !== 0) {
+                return this.findBySelector(sign < 0 ? 'header' : 'footer', this.el, this.selectors)[0];
+            }
+            var selector = model.getSelector('itemBody', itemId);
+            return this.findBySelector(selector, this.el, this.selectors)[0];
+        },
+
+    });
+
+
+var items = [
         [
           {
             id: ":TS Inline new",
@@ -281,8 +281,9 @@ export default class App extends Vue {
             ],
           },
         ],
-      ],
-    });
+      ]
+
+    var order = new MappingRecord().set({items: items});
 
     order.position(100, 200);
     order.addTo(graph);
